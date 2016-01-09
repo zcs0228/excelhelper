@@ -42,6 +42,7 @@
     <Compile Include="ExportExcel.cs" />
     <Compile Include="ImportExcel.cs" />
     <Compile Include="Infrastruction\BaseExcel.cs" />
+    <Compile Include="Infrastruction\ExportHelper.cs" />
     <Compile Include="Infrastruction\FontStyle.cs" />
     <Compile Include="Infrastruction\FontStyleHelper.cs" />
     <Compile Include="Infrastruction\ImportHelper.cs" />

@@ -52,7 +52,7 @@ namespace ExcelHelper
             {
                 for (int i = 0; i < sourceTable.Columns.Count; i++)
                 {
-                    workSheet.Cells[rowIndex, i + 1] = sourceTable.Rows[r][i].ToString();
+                    workSheet.Cells[rowIndex, i + 1] = ExportHelper.ConvertToCellData(sourceTable, r, i);
                 }
                 rowIndex++;
             }
@@ -66,16 +66,18 @@ namespace ExcelHelper
             };
             FontStyleHelper.SetFontStyleForRange(range, bodyStyle);
 
-            workSheet.SaveAs(fileName, Excel.XlFileFormat.xlTemplate, Type.Missing, Type.Missing, Type.Missing,
+            //只保存一个sheet页
+            //workSheet.SaveAs(fileName, Excel.XlFileFormat.xlTemplate, Type.Missing, Type.Missing, Type.Missing,
+            //        Type.Missing, Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing);
+            //保存整个Excel
+            workBook.SaveAs(fileName, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
                     Type.Missing, Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing);
+            workBook.Close(false, Type.Missing, Type.Missing);
+            excelApp.Quit();
 
             Dispose();
         }
 
-        ~ExportExcel()
-        {
-            Dispose(false);
-        }
         public void Dispose()
         {
             Dispose(true);
@@ -87,24 +89,10 @@ namespace ExcelHelper
             if (disposing)
             {
                 //清理托管的代码
-            }
-            //清理非托管的代码
-            if (range != null)
-            {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                range = null;
-            }
-            if (workSheet != null)
-            {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(workSheet);
-                workSheet = null;
-            }
-            if (workBook != null)
-            {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(workBook);
-                workBook = null;
-            }
-            BaseExcel.Dispose(excelApp);
+                GC.Collect();
+            }        
+
+            BaseExcel.Dispose(excelApp, workSheet, workBook, range);
         }
     }
 }

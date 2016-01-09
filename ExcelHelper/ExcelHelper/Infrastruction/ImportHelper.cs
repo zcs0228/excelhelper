@@ -16,7 +16,7 @@ namespace ExcelHelper.Infrastruction
         /// <param name="connStr"></param>
         /// <param name="sheetNames"></param>
         /// <returns></returns>
-        public static DataSet GetDataSetFromExcel(string connStr, string[] sheetNames)
+        public static DataSet GetDataSetFromExcel(string connStr)
         {
             DataSet ds = null;
             using (OleDbConnection conn = new OleDbConnection(connStr))
@@ -24,14 +24,28 @@ namespace ExcelHelper.Infrastruction
                 try
                 {
                     conn.Open();
-                    OleDbDataAdapter da;
-                    ds = new DataSet();
-                    foreach (string item in sheetNames)
+                    DataTable tblName = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+                    if (tblName.Rows.Count < 1 || tblName == null)
                     {
-                        string sql = "select * from [" + item + "$] ";
-                        da = new OleDbDataAdapter(sql, conn);
-                        da.Fill(ds, item);
-                        da.Dispose();
+                        conn.Close();
+                        return null;
+                    }
+                    else
+                    {
+                        ds = new DataSet();
+                        DataTable tbl = null;
+                        for (int i = 0; i < tblName.Rows.Count; i++)
+                        {
+                            tbl = new DataTable();
+                            tbl.TableName = tblName.Rows[i]["TABLE_NAME"].ToString().Replace("$", "");
+                            string vsSql = "SELECT * FROM [" + tblName.Rows[i]["TABLE_NAME"].ToString() + "]";
+                            OleDbDataAdapter myCommand = new OleDbDataAdapter(vsSql, conn);
+                            myCommand.Fill(tbl);
+                            ds.Tables.Add(tbl.Copy());
+                            tbl.Dispose();
+                            tbl = null;
+                        }
+                        conn.Close();
                     }
                 }
                 catch (Exception ex)
@@ -45,6 +59,8 @@ namespace ExcelHelper.Infrastruction
 
         public static DataSet ConvertDataSet(DataSet source)
         {
+            if (source == null) return null;
+
             DataSet result = new DataSet();
             int dataTableCount = source.Tables.Count;
             DataTable temp = null;
