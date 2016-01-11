@@ -10,7 +10,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExcelHelper
 {
-    public class ExportExcel : IDisposable//: BaseExcel
+    public class ExportExcel : IDisposable
     {
         private Excel.ApplicationClass excelApp;
         private Excel.Workbook workBook;
@@ -80,18 +80,7 @@ namespace ExcelHelper
 
         public void Dispose()
         {
-            Dispose(true);
-            //GC.SuppressFinalize(this); //不需要在调用本对象的Finalize()方法
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                //清理托管的代码
-                GC.Collect();
-            }        
-
+            GC.Collect();
             BaseExcel.Dispose(excelApp, workSheet, workBook, range);
         }
     }
