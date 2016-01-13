@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ExcelHelper.Infrastruction;
+using ExcelHelper.OpenXML;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -32,10 +34,22 @@ namespace ExcelHelper.Test
             row2[0] = 2;
             row2[1] = "dafd1111";
             dt.Rows.Add(row2);
+            dt.TableName = "a";
 
+            string fileName = @"C:\Users\Administrator\Desktop\excel\c.xlsx";
+            ExcelOperater o = new ExcelOperater();
+            o.DataTableToExcel(dt, fileName);
+            //o.ExcelToDataSet(fileName);
 
-            ExportExcel export = new ExportExcel();
-            export.DataTableToExcel(dt, "D:\\test1.xls");
+            //ExportExcel export = new ExportExcel();
+            //export.DataTableToExcel(dt, "D:\\test1.xls");
+
+            /*
+            string fileName = @"C:\Users\Administrator\Desktop\excel\a.xlsx";
+            //Zip.GetPart(fileName);
+            ReadExcelByXML excel = new ReadExcelByXML(fileName);
+            excel.Sheets();
+            */
         }
 
         private void button2_Click(object sender, EventArgs e)
