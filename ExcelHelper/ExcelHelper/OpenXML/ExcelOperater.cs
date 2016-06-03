@@ -284,7 +284,7 @@ namespace ExcelHelper.OpenXML
                 return cellValue;
             }
             string cellRefId = cell.CellReference.InnerText;//获取引用相对位置
-            string cellInnerText = cell.CellValue.InnerText;//获取Cell的InnerText
+            string cellInnerText = cell.InnerText;//cell.CellValue.InnerText;//获取Cell的InnerText
             cellValue = cellInnerText;//指定默认值(其实用来处理Excel中的数字)
 
             //获取WorkbookPart中NumberingFormats样式集合

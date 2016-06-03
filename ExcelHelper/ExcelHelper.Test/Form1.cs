@@ -36,10 +36,10 @@ namespace ExcelHelper.Test
             dt.Rows.Add(row2);
             dt.TableName = "a";
 
-            string fileName = @"C:\Users\Administrator\Desktop\excel\c.xlsx";
+            string fileName = @"D:\test1.xls";
             ExcelOperater o = new ExcelOperater();
-            o.DataTableToExcel(dt, fileName);
-            //o.ExcelToDataSet(fileName);
+            //o.DataTableToExcel(dt, fileName);
+            DataSet ds = o.ExcelToDataSet(fileName);
 
             //ExportExcel export = new ExportExcel();
             //export.DataTableToExcel(dt, "D:\\test1.xls");
