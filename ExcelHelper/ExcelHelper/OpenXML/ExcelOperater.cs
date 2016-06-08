@@ -830,6 +830,9 @@ namespace ExcelHelper.OpenXML
         /// <param name="filePath"></param>
         public void DataTableToExcel(DataTable dt, string filePath)
         {
+            if (dt == null || dt.Rows.Count == 0)
+                return;
+
             try
             {
                 using (SpreadsheetDocument document = CreateParts(filePath))
@@ -854,16 +857,59 @@ namespace ExcelHelper.OpenXML
                     sharestringTablePart.SharedStringTable.AppendChild(new SharedStringItem(new DocumentFormat.OpenXml.Spreadsheet.Text("ExcelReader")));
                     sharestringTablePart.SharedStringTable.Save();
                 }
-                //result = 0;
             }
             catch (Exception ex)
             {
-                //iSession.AddError(ex);
-                //result = error_result_prefix - 99;
+                throw ex;
             }
-            //return result;
         }
 
+        /// <summary>
+        /// 导出Excel，执行函数
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="filePath"></param>
+        public void DataSetToExcel(DataSet ds, string filePath)
+        {
+            try
+            {
+                using (SpreadsheetDocument document = CreateParts(filePath))
+                {
+                    if (ds == null || ds.Tables.Count == 0)
+                        return;
+
+                    foreach (DataTable dt in ds.Tables)
+                    {
+                        if (dt.Rows.Count == 0)
+                            continue;
+
+                        WorksheetPart worksheetPart = CreateWorksheet(document.WorkbookPart, dt.TableName);
+
+                        SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                        Stylesheet styleSheet = CreateStylesheet(document.WorkbookPart);
+
+                        //InsertTableTitle(parameter.SheetName, sheetData, styleSheet);
+
+                        // MergeTableTitleCells(dt.Columns.Count, worksheetPart.Worksheet);
+
+                        CreateTableHeader(dt, sheetData);
+
+                        InsertDataIntoSheet(dt, sheetData);
+
+                        SharedStringTablePart sharestringTablePart = CreateSharedStringTablePart(document.WorkbookPart);
+                        sharestringTablePart.SharedStringTable = new SharedStringTable();
+
+                        sharestringTablePart.SharedStringTable.AppendChild(new SharedStringItem(new DocumentFormat.OpenXml.Spreadsheet.Text("ExcelReader")));
+                        sharestringTablePart.SharedStringTable.Save();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         #endregion
     }
 }

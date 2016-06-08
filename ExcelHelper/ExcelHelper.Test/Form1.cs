@@ -21,6 +21,7 @@ namespace ExcelHelper.Test
 
         private void button1_Click(object sender, EventArgs e)
         {
+            DataSet ds = new DataSet();
             DataTable dt = new DataTable();
             DataColumn column1 = new DataColumn("a", typeof(int));
             dt.Columns.Add(column1);
@@ -35,11 +36,29 @@ namespace ExcelHelper.Test
             row2[1] = "dafd1111";
             dt.Rows.Add(row2);
             dt.TableName = "a";
+            ds.Tables.Add(dt);
 
-            string fileName = @"D:\test1.xls";
+            DataTable dt1 = new DataTable();
+            DataColumn column11 = new DataColumn("a", typeof(int));
+            dt1.Columns.Add(column11);
+            DataColumn column21 = new DataColumn("b", typeof(string));
+            dt1.Columns.Add(column21);
+            DataRow row11 = dt1.NewRow();
+            row11[0] = 1;
+            row11[1] = "12345";
+            dt1.Rows.Add(row11);
+            DataRow row21 = dt1.NewRow();
+            row21[0] = 2;
+            row21[1] = "1111111122222";
+            dt1.Rows.Add(row21);
+            dt1.TableName = "b";
+            ds.Tables.Add(dt1);
+            
+            string fileName = @"D:\test1.xlsx";
             ExcelOperater o = new ExcelOperater();
             //o.DataTableToExcel(dt, fileName);
-            DataSet ds = o.ExcelToDataSet(fileName);
+            //o.DataSetToExcel(ds, fileName);
+            DataSet dstest = o.ExcelToDataSet(fileName);
 
             //ExportExcel export = new ExportExcel();
             //export.DataTableToExcel(dt, "D:\\test1.xls");
@@ -55,7 +74,7 @@ namespace ExcelHelper.Test
         private void button2_Click(object sender, EventArgs e)
         {
             ImportExcel import = new ImportExcel();
-            DataSet ds = import.ExcelToDataSet("D:\\test1.xls");
+            DataSet ds = import.ExcelToDataSet("D:\\test1.xlsx");
             DataTable dt = ds.Tables[0];
             string s = dt.Rows[1][0].ToString();
             string s1 = DBNull.Value.ToString();
