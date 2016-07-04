@@ -880,8 +880,8 @@ namespace ExcelHelper.OpenXML
 
                     foreach (DataTable dt in ds.Tables)
                     {
-                        if (dt.Rows.Count == 0)
-                            continue;
+                        //if (dt.Rows.Count == 0)
+                        //    continue;
 
                         WorksheetPart worksheetPart = CreateWorksheet(document.WorkbookPart, dt.TableName);
 
