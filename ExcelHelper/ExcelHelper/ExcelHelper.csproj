@@ -37,6 +37,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -55,7 +56,12 @@
     <Compile Include="Infrastruction\ImportHelper.cs" />
     <Compile Include="Infrastruction\Sheet.cs" />
     <Compile Include="Infrastruction\Zip.cs" />
+    <Compile Include="OpenXML\CustomStylesheet.cs" />
+    <Compile Include="OpenXML\DateCell.cs" />
     <Compile Include="OpenXML\ExcelOperater.cs" />
+    <Compile Include="OpenXML\FormulaCell.cs" />
+    <Compile Include="OpenXML\NumberCell.cs" />
+    <Compile Include="OpenXML\TextCell.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadExcelByXML.cs" />
   </ItemGroup>

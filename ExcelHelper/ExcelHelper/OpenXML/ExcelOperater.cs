@@ -63,7 +63,7 @@ namespace ExcelHelper.OpenXML
             }
             catch (Exception exp)
             {
-                //throw new Exception("可能Excel正在打开中,请关闭重新操作！");
+                throw new Exception("可能Excel正在打开中,请关闭重新操作！" + exp.Message);
             }
             return dataSet;
         }
@@ -97,7 +97,7 @@ namespace ExcelHelper.OpenXML
             }
             catch (Exception exp)
             {
-                //throw new Exception("可能Excel正在打开中,请关闭重新操作！");
+                throw new Exception("可能Excel正在打开中,请关闭重新操作！" + exp.Message);
             }
             return dataTable;
         }
@@ -909,6 +909,262 @@ namespace ExcelHelper.OpenXML
             {
                 throw ex;
             }
+        }
+        #endregion
+
+        #region 写入Excel(新)
+        /// <summary>
+        /// 导出Excel，执行函数
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="filePath"></param>
+        public void DataSet2Excel(DataSet ds, string filePath)
+        {
+            if (ds == null || ds.Tables.Count == 0)
+                return;
+            try
+            {
+                using (SpreadsheetDocument document = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook))
+                {
+                    //create workbook part
+                    WorkbookPart workbookPart = document.AddWorkbookPart();
+
+                    // add stylesheet to workbook part
+                    WorkbookStylesPart stylesPart = document.WorkbookPart.AddNewPart<WorkbookStylesPart>();
+                    Stylesheet styles = new CustomStylesheet();
+                    styles.Save(stylesPart);
+
+                    // create workbook
+                    var workbook = new Workbook();
+
+                    // add work sheet
+                    var sheets = new Sheets();
+                    int index = 0;
+                    foreach (DataTable dt in ds.Tables)
+                    {
+                        index++;
+                        sheets.AppendChild(CreateSheet(index, dt, workbookPart));
+                    }
+                    workbook.AppendChild(sheets);
+
+                    // add workbook to workbook part
+                    document.WorkbookPart.Workbook = workbook;
+                    document.WorkbookPart.Workbook.Save();
+                    document.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private Sheet CreateSheet(int sheetIndex, DataTable dt, WorkbookPart workbookPart)
+        {
+            // create worksheet part
+            WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+            string worksheetId = workbookPart.GetIdOfPart(worksheetPart);
+
+            // variables
+            int numCols = dt.Columns.Count;
+            int numRows = dt.Rows.Count;
+            List<char> az = new List<Char>(Enumerable.Range('A', 'Z' - 'A' + 1).Select(i => (Char)i).ToArray());
+            List<char> headerCols = az.GetRange(0, numCols);
+
+            // get the worksheet data
+            int firstTableRow;
+            SheetData sheetData = CreateSheetData(dt, headerCols, out firstTableRow);
+
+            // populate column metadata
+            var columns = new Columns();
+            for (var col = 0; col < numCols; col++)
+            {
+                var width = ColumnWidth(sheetData, col, 0);
+                columns.AppendChild(CreateColumnMetadata((UInt32)col + 1, (UInt32)numCols + 1, width));
+            }
+
+            // populate worksheet
+            var worksheet = new Worksheet();
+            worksheet.AppendChild(columns);
+            worksheet.AppendChild(sheetData);
+
+            // add an auto filter
+            worksheet.AppendChild(new AutoFilter
+            {
+                Reference =
+                    String.Format("{0}{1}:{2}{3}", headerCols.First(), firstTableRow, headerCols.Last(),
+                        numRows + 1)
+            });
+
+            // add worksheet to worksheet part
+            worksheetPart.Worksheet = worksheet;
+            worksheetPart.Worksheet.Save();
+
+            return new Sheet { Name = dt.TableName, SheetId = (UInt32)sheetIndex, Id = worksheetId };
+        }
+
+        private SheetData CreateSheetData(DataTable dt, List<char> headerCols, out int firstTableRow)
+        {
+            SheetData sheetData = new SheetData();
+            int numCols = headerCols.Count;
+            int rowIndex = 0;
+            firstTableRow = 0;
+            Row row;
+
+            // create the header
+            rowIndex++;
+            row = CreateHeader(dt, headerCols, ref rowIndex);
+            sheetData.AppendChild(row);
+            firstTableRow = rowIndex;
+
+            if (dt.Rows.Count == 0)
+                return sheetData;
+
+            // create a row for each object and set the columns for each field
+            CreateTable(dt, ref rowIndex, numCols, headerCols, sheetData);
+
+            return sheetData;
+        }
+
+        private Row CreateHeader(DataTable dt, List<char> headerCols, ref int rowIndex)
+        {
+            Row header = new Row { RowIndex = (uint)rowIndex };
+            int colIndex = 0;
+            foreach (DataColumn dc in dt.Columns)
+            {
+                TextCell c = new TextCell(headerCols[colIndex].ToString(), dc.ColumnName, rowIndex)
+                {
+                    StyleIndex = (UInt32)CustomStylesheet.CustomCellFormats.HeaderText
+                };
+                header.Append(c);
+                colIndex++;
+            }
+            return header;
+        }
+
+        private double ColumnWidth(SheetData sheetData, int col, int titleRowCount)
+        {
+            var rows = sheetData.ChildElements.ToList();
+            if (col == 0)
+            {
+                rows = sheetData.ChildElements.ToList().GetRange(titleRowCount, sheetData.ChildElements.Count - titleRowCount);
+            }
+
+            var maxLength = (from row in rows
+                             where row.ChildElements.Count > col
+                             select row.ChildElements[col]
+                into cell
+                             where cell.GetType() != typeof(FormulaCell)
+                             select cell.InnerText.Length).Concat(new[] { 0 }).Max();
+            var width = maxLength * 0.9 + 5;
+            return width;
+        }
+
+        private Column CreateColumnMetadata(UInt32 startColumnIndex, UInt32 endColumnIndex, double width)
+        {
+            var column = new Column
+            {
+                Min = startColumnIndex,
+                Max = endColumnIndex,
+                BestFit = true,
+                Width = width,
+            };
+            return column;
+        }
+
+        private void CreateTable(DataTable dt, ref int rowIndex, int numCols,
+            List<char> headers, SheetData sheetData, bool hidden = false, int outline = 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                rowIndex++;
+
+                // create a row
+                var row = new Row
+                {
+                    RowIndex = (uint)rowIndex,
+                    Collapsed = new BooleanValue(false),
+                    OutlineLevel = new ByteValue((byte)outline),
+                    Hidden = new BooleanValue(hidden)
+                };
+
+                int col;
+
+                // populate columns using supplied objects
+                for (col = 0; col < numCols; col++)
+                {
+                    Type dcType = dt.Columns[col].DataType;
+                    Cell cell;
+                    if (dcType == typeof(decimal))
+                    {
+                        cell = CreateDecimalNumberCell(rowIndex, headers,
+                            dr[col], col);
+                    }
+                    else
+                    {
+                        cell = CreateCell(rowIndex, headers, dr[col], col);
+                    }
+                    row.AppendChild(cell);
+                }
+
+                sheetData.AppendChild(row);
+            }
+        }
+
+        private Cell CreateDecimalNumberCell(int rowIndex, List<char> headers, object columnObj, int col)
+        {
+            // TODO: decimal places other than 5
+            return new NumberCell(headers[col].ToString(), columnObj.ToString(), rowIndex)
+            {
+                StyleIndex = (UInt32)CustomStylesheet.CustomCellFormats.DefaultNumber5DecimalPlace
+            };
+        }
+
+        private static Cell CreateCell(int rowIndex, List<char> headers, object columnObj, int col)
+        {
+            Cell cell;
+            if (columnObj is string)
+            {
+                cell = new TextCell(headers[col].ToString(), columnObj.ToString(), rowIndex);
+            }
+            else if (columnObj is bool)
+            {
+                var value = (bool)columnObj ? "Yes" : "No";
+                cell = new TextCell(headers[col].ToString(), value, rowIndex);
+            }
+            else if (columnObj is DateTime)
+            {
+                cell = new DateCell(headers[col].ToString(), (DateTime)columnObj, rowIndex);
+            }
+            else if (columnObj is TimeSpan)
+            {
+                var ts = (TimeSpan)columnObj;
+                // excel stores time as "fraction of hours in a day"
+                cell = new NumberCell(headers[col].ToString(), (ts.TotalHours / 24).ToString(), rowIndex)
+                {
+                    StyleIndex = (UInt32)CustomStylesheet.CustomCellFormats.Duration
+                };
+            }
+            else if (columnObj is decimal || columnObj is double)
+            {
+                cell = new NumberCell(headers[col].ToString(), columnObj.ToString(), rowIndex)
+                {
+                    StyleIndex = (UInt32)CustomStylesheet.CustomCellFormats.DefaultNumber2DecimalPlace
+                };
+            }
+            else
+            {
+                long value;
+                if (long.TryParse(columnObj.ToString(), out value))
+                {
+                    cell = new NumberCell(headers[col].ToString(), columnObj.ToString(), rowIndex);
+                }
+                else
+                {
+                    cell = new TextCell(headers[col].ToString(), columnObj.ToString(), rowIndex);
+                }
+            }
+            return cell;
         }
         #endregion
     }

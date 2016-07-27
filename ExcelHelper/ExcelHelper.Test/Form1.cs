@@ -23,29 +23,29 @@ namespace ExcelHelper.Test
         {
             DataSet ds = new DataSet();
 
-            //DataTable dt = new DataTable();
-            //DataColumn column1 = new DataColumn("a", typeof(int));
-            //dt.Columns.Add(column1);
-            //DataColumn column2 = new DataColumn("b", typeof(string));
-            //dt.Columns.Add(column2);
+            DataTable dt = new DataTable();
+            DataColumn column1 = new DataColumn("a", typeof(int));
+            dt.Columns.Add(column1);
+            DataColumn column2 = new DataColumn("b", typeof(string));
+            dt.Columns.Add(column2);
 
-            //DataRow row1 = dt.NewRow();
-            //row1[0] = 1;
-            //row1[1] = "dfa1111";
-            //dt.Rows.Add(row1);
-            //DataRow row2 = dt.NewRow();
-            //row2[0] = 2;
-            //row2[1] = "dafd1111";
-            //dt.Rows.Add(row2);
+            DataRow row1 = dt.NewRow();
+            row1[0] = 111111;
+            row1[1] = "dfa111111111111111111111111";
+            dt.Rows.Add(row1);
+            DataRow row2 = dt.NewRow();
+            row2[0] = 2;
+            row2[1] = "dafd1111";
+            dt.Rows.Add(row2);
 
-            //dt.TableName = "a";
-            //ds.Tables.Add(dt);
+            dt.TableName = "a";
+            ds.Tables.Add(dt);
 
-            //DataTable dt1 = new DataTable();
-            //DataColumn column11 = new DataColumn("a", typeof(int));
-            //dt1.Columns.Add(column11);
-            //DataColumn column21 = new DataColumn("b", typeof(string));
-            //dt1.Columns.Add(column21);
+            DataTable dt1 = new DataTable();
+            DataColumn column11 = new DataColumn("a", typeof(int));
+            dt1.Columns.Add(column11);
+            DataColumn column21 = new DataColumn("b", typeof(string));
+            dt1.Columns.Add(column21);
 
             //DataRow row11 = dt1.NewRow();
             //row11[0] = 1;
@@ -56,13 +56,13 @@ namespace ExcelHelper.Test
             //row21[1] = "1111111122222";
             //dt1.Rows.Add(row21);
 
-            //dt1.TableName = "b";
-            //ds.Tables.Add(dt1);
-            
+            dt1.TableName = "b";
+            ds.Tables.Add(dt1);
+
             string fileName = @"D:\test1.xlsx";
             ExcelOperater o = new ExcelOperater();
             //o.DataTableToExcel(dt, fileName);
-            o.DataSetToExcel(ds, fileName);
+            o.DataSet2Excel(ds, fileName);
             //DataSet dstest = o.ExcelToDataSet(fileName);
 
             //ExportExcel export = new ExportExcel();
