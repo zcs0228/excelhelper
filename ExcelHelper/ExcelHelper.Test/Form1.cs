@@ -24,18 +24,42 @@ namespace ExcelHelper.Test
             DataSet ds = new DataSet();
 
             DataTable dt = new DataTable();
-            DataColumn column1 = new DataColumn("a", typeof(int));
+            DataColumn column1 = new DataColumn("a", typeof(Decimal));
             dt.Columns.Add(column1);
             DataColumn column2 = new DataColumn("b", typeof(string));
             dt.Columns.Add(column2);
+            DataColumn column3 = new DataColumn("c", typeof(DateTime));
+            dt.Columns.Add(column3);
+            DataColumn column4 = new DataColumn("d", typeof(bool));
+            dt.Columns.Add(column4);
+            DataColumn column5 = new DataColumn("e", typeof(double));
+            dt.Columns.Add(column5);
+            DataColumn column6 = new DataColumn("f", typeof(Int16));
+            dt.Columns.Add(column6);
+            DataColumn column7 = new DataColumn("g", typeof(Int32));
+            dt.Columns.Add(column7);
+            DataColumn column8 = new DataColumn("h", typeof(Int64));
+            dt.Columns.Add(column8);
+            DataColumn column9 = new DataColumn("i", typeof(int));
+            dt.Columns.Add(column9);
 
             DataRow row1 = dt.NewRow();
             row1[0] = 111111;
             row1[1] = "dfa111111111111111111111111";
+            row1[2] = "2016/7/8 12:00:00";
+            row1[3] = 0;
+            row1[4] = 0.123;
+            row1[5] = 1;
+            row1[6] = 2;
+            row1[7] = 3;
+            row1[8] = 4;
             dt.Rows.Add(row1);
             DataRow row2 = dt.NewRow();
-            row2[0] = 2;
+            row2[0] = 2.1;
             row2[1] = "dafd1111";
+            row2[2] = "2016/7/8 12:00:00";
+            row2[3] = 0;
+            row2[4] = 0.123;
             dt.Rows.Add(row2);
 
             dt.TableName = "a";
@@ -78,8 +102,11 @@ namespace ExcelHelper.Test
 
         private void button2_Click(object sender, EventArgs e)
         {
-            ImportExcel import = new ImportExcel();
-            DataSet ds = import.ExcelToDataSet("D:\\test1.xlsx");
+            ExcelOperater o = new ExcelOperater();
+            DataSet ds = o.ExcelToDataSet("D:\\test1.xlsx");
+
+            //ImportExcel import = new ImportExcel();
+            //DataSet ds = import.ExcelToDataSet("D:\\test1.xlsx");
             DataTable dt = ds.Tables[0];
             string s = dt.Rows[1][0].ToString();
             string s1 = DBNull.Value.ToString();

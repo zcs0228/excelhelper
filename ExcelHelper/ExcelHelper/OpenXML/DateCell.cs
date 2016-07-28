@@ -3,6 +3,9 @@ using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ExcelHelper.OpenXML
 {
+    /// <summary>
+    /// 转换为"yyyy-MM-dd"
+    /// </summary>
     public class DateCell : Cell
     {
         public DateCell(string header, DateTime dateTime, int index)

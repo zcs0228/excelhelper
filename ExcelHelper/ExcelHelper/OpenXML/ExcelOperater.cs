@@ -290,7 +290,7 @@ namespace ExcelHelper.OpenXML
             //获取WorkbookPart中NumberingFormats样式集合
             //List<string> dicStyles = GetNumberFormatsStyle(workBookPart);
             //获取WorkbookPart中共享String数据
-            SharedStringTable sharedTable = workBookPart.SharedStringTablePart.SharedStringTable;
+            //SharedStringTable sharedTable = workBookPart.SharedStringTablePart.SharedStringTable;
 
             try
             {
@@ -302,7 +302,12 @@ namespace ExcelHelper.OpenXML
                         case CellValues.SharedString://字符串
                             //获取该Cell的所在的索引
                             int cellIndex = int.Parse(cellInnerText);
+                            //获取WorkbookPart中共享String数据
+                            SharedStringTable sharedTable = workBookPart.SharedStringTablePart.SharedStringTable;
                             cellValue = sharedTable.ChildElements[cellIndex].InnerText;
+                            break;
+                        case CellValues.InlineString:
+                            cellValue = cellInnerText;
                             break;
                         case CellValues.Boolean://布尔
                             cellValue = (cellInnerText == "1") ? "TRUE" : "FALSE";
@@ -1095,15 +1100,16 @@ namespace ExcelHelper.OpenXML
                 {
                     Type dcType = dt.Columns[col].DataType;
                     Cell cell;
-                    if (dcType == typeof(decimal))
-                    {
-                        cell = CreateDecimalNumberCell(rowIndex, headers,
-                            dr[col], col);
-                    }
-                    else
-                    {
-                        cell = CreateCell(rowIndex, headers, dr[col], col);
-                    }
+                    //if (dcType == typeof(decimal))
+                    //{
+                    //    cell = CreateDecimalNumberCell(rowIndex, headers,
+                    //        dr[col], col);
+                    //}
+                    //else
+                    //{
+                    //cell = CreateCell(rowIndex, headers, dr[col], col);
+                    //}
+                    cell = CreateCell(rowIndex, headers, dr[col], col);
                     row.AppendChild(cell);
                 }
 
@@ -1129,7 +1135,7 @@ namespace ExcelHelper.OpenXML
             }
             else if (columnObj is bool)
             {
-                var value = (bool)columnObj ? "Yes" : "No";
+                var value = (bool)columnObj ? "True" : "False";
                 cell = new TextCell(headers[col].ToString(), value, rowIndex);
             }
             else if (columnObj is DateTime)
@@ -1151,6 +1157,12 @@ namespace ExcelHelper.OpenXML
                 {
                     StyleIndex = (UInt32)CustomStylesheet.CustomCellFormats.DefaultNumber2DecimalPlace
                 };
+            }
+            else if (columnObj is int || columnObj is Int16 || columnObj is Int32 || columnObj is Int64)
+            {
+                long value = 0;
+                long.TryParse(columnObj.ToString(), out value);
+                cell = new NumberCell(headers[col].ToString(), columnObj.ToString(), rowIndex);
             }
             else
             {
